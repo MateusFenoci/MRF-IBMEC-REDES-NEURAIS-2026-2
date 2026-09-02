@@ -4,201 +4,659 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Redes Neurais · IBMEC 2026.2</title>
-<meta name="description" content="Projeto da disciplina de Redes Neurais — IBMEC, 2026.2. Experimentos, notebooks e resultados.">
+<meta name="description" content="Projeto da disciplina de Redes Neurais no IBMEC, 2026.2. Experimentos, notebooks, relatórios e uma rede neural treinando ao vivo no navegador.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Manrope:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink: #232840;
-    --paper: #f2f4f8;
-    --line: #c9d0de;
-    --cobalt: #2447d6;
-    --signal: #f0a132;
-    --muted: #6b7288;
+    --bg: #0d1530;
+    --panel: #131d3b;
+    --panel-2: #182448;
+    --ink: #edf0fa;
+    --muted: #8b95b5;
+    --line: rgba(237, 240, 250, 0.12);
+    --coral: #ff7657;
+    --sky: #47c6ff;
+    --radius: 14px;
   }
 
   * { margin: 0; padding: 0; box-sizing: border-box; }
 
+  html { scroll-behavior: smooth; }
+  @media (prefers-reduced-motion: reduce) { html { scroll-behavior: auto; } }
+
   body {
-    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
-    background: var(--paper);
+    font-family: "Manrope", "Segoe UI", system-ui, sans-serif;
+    background: var(--bg);
     color: var(--ink);
-    line-height: 1.6;
+    line-height: 1.65;
+    -webkit-font-smoothing: antialiased;
     background-image:
+      radial-gradient(900px 520px at 78% 8%, rgba(71, 198, 255, 0.10), transparent 60%),
+      radial-gradient(700px 480px at 18% 30%, rgba(255, 118, 87, 0.08), transparent 60%),
       linear-gradient(var(--line) 1px, transparent 1px),
       linear-gradient(90deg, var(--line) 1px, transparent 1px);
-    background-size: 48px 48px;
-    background-position: center top;
-    min-height: 100vh;
+    background-size: auto, auto, 56px 56px, 56px 56px;
+    background-attachment: fixed;
   }
 
-  .wrap {
-    max-width: 880px;
-    margin: 0 auto;
-    padding: 0 24px;
-  }
+  h1, h2, h3 { font-family: "Syne", "Manrope", sans-serif; letter-spacing: -0.02em; line-height: 1.1; }
 
-  header {
-    padding: 72px 0 32px;
-    text-align: center;
-  }
-
-  .net {
-    width: min(520px, 100%);
-    margin: 0 auto 40px;
-    display: block;
-  }
-
-  .net .fio { stroke: var(--line); stroke-width: 1.5; }
-  .net .fio.ativo { stroke: var(--cobalt); stroke-width: 2; }
-  .net .no { fill: #fff; stroke: var(--ink); stroke-width: 2; }
-  .net .no.ativo { fill: var(--signal); stroke: var(--ink); }
-  .net .pulso {
-    fill: var(--cobalt);
-    opacity: 0;
-  }
-
-  @media (prefers-reduced-motion: no-preference) {
-    .net .pulso { animation: viajar 2.4s ease-in-out 0.6s 1 forwards; }
-    .net .pulso.p2 { animation-delay: 0.9s; }
-    .net .pulso.p3 { animation-delay: 1.2s; }
-    @keyframes viajar {
-      0%   { opacity: 0; }
-      10%  { opacity: 1; }
-      90%  { opacity: 1; }
-      100% { opacity: 0; }
-    }
-    .net .pulso circle { animation: inherit; }
-  }
-
-  h1 {
-    font-size: clamp(2rem, 5vw, 3.1rem);
-    font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.15;
-    margin-bottom: 12px;
-  }
-
-  .curso {
-    color: var(--muted);
-    font-size: 1.05rem;
-  }
-
-  main {
-    background: #fff;
-    border: 1.5px solid var(--ink);
+  a { color: var(--sky); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+  a:focus-visible, button:focus-visible, canvas:focus-visible {
+    outline: 2px solid var(--sky);
+    outline-offset: 3px;
     border-radius: 6px;
-    padding: 40px clamp(24px, 5vw, 56px);
-    margin: 24px auto 0;
-    box-shadow: 6px 6px 0 var(--line);
   }
 
-  main p { margin-bottom: 20px; max-width: 62ch; }
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px; }
 
-  h2 {
-    font-size: 1.15rem;
-    margin: 32px 0 12px;
-    padding-bottom: 6px;
-    border-bottom: 2px solid var(--cobalt);
+  /* ---------- navegação ---------- */
+  nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 22px 0;
+    gap: 16px;
+  }
+  .marca {
+    font-family: "Syne", sans-serif;
+    font-weight: 800;
+    font-size: 1.05rem;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .marca span {
+    width: 12px; height: 12px; border-radius: 50%;
+    background: linear-gradient(135deg, var(--coral), var(--sky));
     display: inline-block;
   }
+  nav ul { list-style: none; display: flex; gap: 22px; font-weight: 500; font-size: 0.95rem; }
+  nav ul a { color: var(--muted); }
+  nav ul a:hover { color: var(--ink); text-decoration: none; }
+  @media (max-width: 600px) { nav ul { display: none; } }
 
-  ul { list-style: none; }
+  /* ---------- hero ---------- */
+  .hero {
+    display: grid;
+    grid-template-columns: 1.05fr 1fr;
+    gap: 48px;
+    align-items: center;
+    padding: 56px 0 72px;
+  }
+  @media (max-width: 860px) {
+    .hero { grid-template-columns: 1fr; gap: 36px; padding: 32px 0 56px; }
+  }
 
-  ul li {
-    padding: 10px 0;
+  .sub { color: var(--muted); font-weight: 500; margin-bottom: 18px; }
+  h1 {
+    font-size: clamp(2.6rem, 6.5vw, 4.6rem);
+    font-weight: 800;
+    margin-bottom: 22px;
+  }
+  h1 em {
+    font-style: normal;
+    background: linear-gradient(90deg, var(--coral), var(--sky));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  .lead { font-size: 1.12rem; color: #c6cde3; max-width: 46ch; margin-bottom: 30px; }
+
+  .acoes { display: flex; gap: 12px; flex-wrap: wrap; }
+  .btn {
+    display: inline-flex; align-items: center; gap: 8px;
+    padding: 12px 20px;
+    border-radius: 10px;
+    font-weight: 600;
+    font-size: 0.95rem;
+    border: 1.5px solid var(--line);
+    color: var(--ink);
+    background: transparent;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  .btn:hover { background: var(--panel-2); text-decoration: none; }
+  .btn.primario { background: var(--sky); color: #06101f; border-color: var(--sky); }
+  .btn.primario:hover { background: #6fd3ff; }
+
+  /* ---------- demo ---------- */
+  .demo {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 18px;
+    box-shadow: 0 30px 80px rgba(0, 0, 0, 0.35);
+  }
+  .demo-cabecalho {
+    display: flex; justify-content: space-between; align-items: baseline;
+    gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+  }
+  .demo-cabecalho h3 { font-size: 1rem; font-weight: 700; }
+  .ao-vivo {
+    font-size: 0.8rem; color: var(--muted); font-weight: 500;
+    display: inline-flex; align-items: center; gap: 7px;
+  }
+  .ao-vivo::before {
+    content: ""; width: 8px; height: 8px; border-radius: 50%;
+    background: #57e39a; box-shadow: 0 0 0 0 rgba(87, 227, 154, 0.6);
+  }
+  @media (prefers-reduced-motion: no-preference) {
+    .ao-vivo::before { animation: bater 1.8s infinite; }
+    @keyframes bater {
+      0%   { box-shadow: 0 0 0 0 rgba(87, 227, 154, 0.55); }
+      70%  { box-shadow: 0 0 0 8px rgba(87, 227, 154, 0); }
+      100% { box-shadow: 0 0 0 0 rgba(87, 227, 154, 0); }
+    }
+  }
+
+  canvas {
+    width: 100%;
+    aspect-ratio: 1 / 1;
+    display: block;
+    border-radius: 10px;
+    background: #0a1128;
+    cursor: pointer;
+  }
+
+  .metricas {
+    display: grid; grid-template-columns: repeat(3, 1fr);
+    gap: 10px; margin-top: 14px;
+  }
+  .metrica {
+    background: var(--panel-2);
+    border-radius: 10px;
+    padding: 10px 12px;
+  }
+  .metrica small { display: block; color: var(--muted); font-size: 0.78rem; font-weight: 500; }
+  .metrica strong { font-family: "Syne", sans-serif; font-size: 1.35rem; font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .controles { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; align-items: center; }
+  .seg { display: inline-flex; background: var(--panel-2); border-radius: 10px; padding: 4px; gap: 2px; }
+  .seg button, .mini {
+    font-family: inherit; font-size: 0.85rem; font-weight: 600;
+    background: transparent; color: var(--muted);
+    border: none; border-radius: 8px; padding: 7px 12px; cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+  .seg button[aria-pressed="true"] { background: var(--ink); color: var(--bg); }
+  .seg button:hover:not([aria-pressed="true"]) { color: var(--ink); }
+  .mini { border: 1.5px solid var(--line); margin-left: auto; }
+  .mini:hover { color: var(--ink); background: var(--panel-2); }
+  .mini + .mini { margin-left: 0; }
+
+  .legenda {
+    display: flex; gap: 16px; margin-top: 12px;
+    font-size: 0.8rem; color: var(--muted); flex-wrap: wrap;
+  }
+  .legenda i {
+    display: inline-block; width: 10px; height: 10px; border-radius: 50%;
+    margin-right: 6px; vertical-align: -1px; border: 1.5px solid rgba(255,255,255,0.8);
+  }
+  .legenda .c0 i { background: var(--coral); }
+  .legenda .c1 i { background: var(--sky); }
+  .legenda .arq { margin-left: auto; }
+
+  /* ---------- seções ---------- */
+  section { padding: 56px 0; border-top: 1px solid var(--line); }
+  section h2 { font-size: clamp(1.7rem, 3.5vw, 2.3rem); font-weight: 800; margin-bottom: 10px; }
+  .intro { color: var(--muted); max-width: 60ch; margin-bottom: 32px; }
+
+  .roteiro { list-style: none; counter-reset: modulo; display: grid; gap: 0; }
+  .roteiro li {
+    counter-increment: modulo;
+    display: grid;
+    grid-template-columns: 56px 1fr auto;
+    gap: 18px;
+    align-items: start;
+    padding: 20px 0;
     border-bottom: 1px solid var(--line);
-    display: flex;
-    justify-content: space-between;
-    align-items: baseline;
-    gap: 16px;
-    flex-wrap: wrap;
   }
-  ul li:last-child { border-bottom: none; }
+  .roteiro li:last-child { border-bottom: none; }
+  .roteiro li::before {
+    content: counter(modulo, decimal-leading-zero);
+    font-family: "Syne", sans-serif;
+    font-weight: 800;
+    font-size: 1.6rem;
+    line-height: 1;
+    color: transparent;
+    -webkit-text-stroke: 1.2px var(--muted);
+    padding-top: 4px;
+  }
+  .roteiro h3 { font-size: 1.1rem; font-weight: 700; margin-bottom: 4px; }
+  .roteiro p { color: var(--muted); font-size: 0.95rem; max-width: 58ch; }
+  .roteiro a { font-weight: 600; }
+  .pill {
+    font-size: 0.78rem; font-weight: 600;
+    padding: 5px 11px; border-radius: 999px;
+    border: 1px solid var(--line); color: var(--muted);
+    white-space: nowrap; margin-top: 4px;
+  }
+  .pill.andamento { color: #57e39a; border-color: rgba(87, 227, 154, 0.4); }
+  .pill.pronto { color: var(--sky); border-color: rgba(71, 198, 255, 0.4); }
+  @media (max-width: 600px) {
+    .roteiro li { grid-template-columns: 44px 1fr; }
+    .roteiro li .pill { grid-column: 2; justify-self: start; margin-top: 0; }
+  }
 
-  .status {
-    font-size: 0.85rem;
-    color: var(--muted);
-    white-space: nowrap;
-  }
-
-  a { color: var(--cobalt); }
-  a:focus-visible {
-    outline: 2px solid var(--cobalt);
-    outline-offset: 3px;
-    border-radius: 2px;
-  }
+  .sobre { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; }
+  @media (max-width: 760px) { .sobre { grid-template-columns: 1fr; } }
+  .sobre p { color: #c6cde3; margin-bottom: 14px; max-width: 52ch; }
+  .sobre dl { display: grid; grid-template-columns: auto 1fr; gap: 10px 20px; align-content: start; }
+  .sobre dt { color: var(--muted); font-weight: 500; }
+  .sobre dd { font-weight: 500; }
 
   footer {
-    text-align: center;
-    padding: 40px 0 56px;
+    border-top: 1px solid var(--line);
+    padding: 32px 0 48px;
     color: var(--muted);
     font-size: 0.9rem;
+    display: flex; justify-content: space-between; gap: 16px; flex-wrap: wrap;
   }
 </style>
 </head>
 <body>
 
 <div class="wrap">
-  <header>
-    <svg class="net" viewBox="0 0 520 220" role="img" aria-label="Diagrama de uma rede neural com três camadas">
-      <!-- conexões: entrada -> oculta -->
-      <line class="fio ativo" x1="80" y1="60"  x2="260" y2="40"/>
-      <line class="fio"       x1="80" y1="60"  x2="260" y2="110"/>
-      <line class="fio"       x1="80" y1="60"  x2="260" y2="180"/>
-      <line class="fio"       x1="80" y1="160" x2="260" y2="40"/>
-      <line class="fio ativo" x1="80" y1="160" x2="260" y2="110"/>
-      <line class="fio"       x1="80" y1="160" x2="260" y2="180"/>
-      <!-- conexões: oculta -> saída -->
-      <line class="fio ativo" x1="260" y1="40"  x2="440" y2="110"/>
-      <line class="fio ativo" x1="260" y1="110" x2="440" y2="110"/>
-      <line class="fio"       x1="260" y1="180" x2="440" y2="110"/>
 
-      <!-- pulsos de sinal -->
-      <circle class="pulso" r="4">
-        <animateMotion dur="2.4s" begin="0.6s" fill="freeze" path="M80,60 L260,40 L440,110"/>
-      </circle>
-      <circle class="pulso p2" r="4">
-        <animateMotion dur="2.4s" begin="0.9s" fill="freeze" path="M80,160 L260,110 L440,110"/>
-      </circle>
+  <nav aria-label="Principal">
+    <a class="marca" href="#"><span aria-hidden="true"></span>Redes Neurais</a>
+    <ul>
+      <li><a href="#demo">Demo</a></li>
+      <li><a href="#roteiro">Roteiro</a></li>
+      <li><a href="#sobre">Sobre</a></li>
+      <li><a href="https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2">GitHub</a></li>
+    </ul>
+  </nav>
 
-      <!-- neurônios -->
-      <circle class="no" cx="80"  cy="60"  r="16"/>
-      <circle class="no" cx="80"  cy="160" r="16"/>
-      <circle class="no" cx="260" cy="40"  r="16"/>
-      <circle class="no" cx="260" cy="110" r="16"/>
-      <circle class="no" cx="260" cy="180" r="16"/>
-      <circle class="no ativo" cx="440" cy="110" r="18"/>
-    </svg>
+  <header class="hero">
+    <div>
+      <p class="sub">Disciplina de Redes Neurais, IBMEC, turma 2026.2</p>
+      <h1>Ensinando uma máquina a <em>enxergar padrões</em></h1>
+      <p class="lead">
+        Este site acompanha o projeto da disciplina: os experimentos, os relatórios e
+        os resultados de cada etapa. A rede ao lado está sendo treinada agora,
+        no seu navegador, usando o mesmo algoritmo que estudamos em sala.
+      </p>
+      <div class="acoes">
+        <a class="btn primario" href="#roteiro">Ver o roteiro</a>
+        <a class="btn" href="https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2">Código no GitHub</a>
+      </div>
+    </div>
 
-    <h1>Redes Neurais</h1>
-    <p class="curso">IBMEC · Engenharia · 2026.2</p>
+    <div class="demo" id="demo">
+      <div class="demo-cabecalho">
+        <h3>Fronteira de decisão em tempo real</h3>
+        <span class="ao-vivo" id="estado">treinando</span>
+      </div>
+
+      <canvas id="tela" width="720" height="720" tabindex="0" role="img"
+              aria-label="Gráfico bidimensional mostrando pontos de duas classes e a fronteira de decisão aprendida pela rede neural"></canvas>
+
+      <div class="metricas" aria-live="polite">
+        <div class="metrica"><small>Época</small><strong id="m-epoca">0</strong></div>
+        <div class="metrica"><small>Perda</small><strong id="m-perda">–</strong></div>
+        <div class="metrica"><small>Acurácia</small><strong id="m-acc">–</strong></div>
+      </div>
+
+      <div class="controles">
+        <div class="seg" role="group" aria-label="Conjunto de dados">
+          <button type="button" data-ds="circulo" aria-pressed="true">Círculo</button>
+          <button type="button" data-ds="xor" aria-pressed="false">XOR</button>
+          <button type="button" data-ds="luas" aria-pressed="false">Luas</button>
+          <button type="button" data-ds="espiral" aria-pressed="false">Espiral</button>
+        </div>
+        <button type="button" class="mini" id="btn-pausa">Pausar</button>
+        <button type="button" class="mini" id="btn-reset">Reiniciar</button>
+      </div>
+
+      <div class="legenda">
+        <span class="c0"><i></i>classe 0</span>
+        <span class="c1"><i></i>classe 1</span>
+        <span class="arq">MLP 2 → 16 → 16 → 1, tanh, SGD</span>
+      </div>
+    </div>
   </header>
 
-  <main>
-    <p>
-      Este site reúne os experimentos, relatórios e resultados desenvolvidos ao longo
-      da disciplina de Redes Neurais. O conteúdo é atualizado a cada entrega,
-      com publicação automática a partir do repositório no GitHub.
+  <section id="roteiro">
+    <h2>Roteiro da disciplina</h2>
+    <p class="intro">
+      Cada módulo vira uma entrega publicada aqui. Conforme os notebooks e relatórios
+      ficarem prontos, os links aparecem nesta lista.
     </p>
 
-    <h2>Conteúdo do projeto</h2>
-    <ul>
-      <li><span>Perceptron e classificação linear</span> <span class="status">em breve</span></li>
-      <li><span>Redes multicamadas (MLP) e backpropagation</span> <span class="status">em breve</span></li>
-      <li><span>Redes convolucionais (CNN)</span> <span class="status">em breve</span></li>
-      <li><span>Projeto final</span> <span class="status">em breve</span></li>
-    </ul>
+    <!-- Para atualizar o status, troque a classe do <span>: "pill" (em breve), "pill andamento", "pill pronto". -->
+    <ol class="roteiro">
+      <li>
+        <div>
+          <h3>Perceptron e classificação linear</h3>
+          <p>O neurônio artificial, a regra de aprendizado do perceptron e os limites de uma fronteira linear.</p>
+        </div>
+        <span class="pill">em breve</span>
+      </li>
+      <li>
+        <div>
+          <h3>Redes multicamadas e backpropagation</h3>
+          <p>Funções de ativação, gradiente descendente e como o erro se propaga de volta pelas camadas.</p>
+        </div>
+        <span class="pill">em breve</span>
+      </li>
+      <li>
+        <div>
+          <h3>Otimização e regularização</h3>
+          <p>Taxa de aprendizado, momento, Adam, dropout e as estratégias para evitar overfitting.</p>
+        </div>
+        <span class="pill">em breve</span>
+      </li>
+      <li>
+        <div>
+          <h3>Redes convolucionais</h3>
+          <p>Filtros, pooling e a arquitetura que tornou o reconhecimento de imagens viável.</p>
+        </div>
+        <span class="pill">em breve</span>
+      </li>
+      <li>
+        <div>
+          <h3>Projeto final</h3>
+          <p>Aplicação completa em um problema real, com relatório, código e apresentação dos resultados.</p>
+        </div>
+        <span class="pill">em breve</span>
+      </li>
+    </ol>
+  </section>
 
-    <h2>Repositório</h2>
-    <p>
-      O código-fonte e os notebooks estão disponíveis em
-      <a href="https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2">github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2</a>.
-    </p>
-  </main>
+  <section id="sobre">
+    <div class="sobre">
+      <div>
+        <h2>Sobre o projeto</h2>
+        <p>
+          Repositório acadêmico da disciplina de Redes Neurais do IBMEC. O código-fonte,
+          os notebooks e os relatórios ficam no GitHub, e cada alteração enviada para a
+          branch principal é publicada automaticamente neste site.
+        </p>
+        <p>
+          A demonstração no topo da página é uma rede neural escrita do zero em JavaScript,
+          sem bibliotecas: duas camadas ocultas de 16 neurônios com ativação tanh, saída
+          sigmoide e treinamento por gradiente descendente estocástico.
+        </p>
+      </div>
+      <dl>
+        <dt>Instituição</dt><dd>IBMEC</dd>
+        <dt>Período</dt><dd>2026.2</dd>
+        <dt>Autor</dt><dd>Mateus Rezende Fenoci</dd>
+        <dt>Repositório</dt><dd><a href="https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2">MRF-IBMEC-REDES-NEURAIS-2026-2</a></dd>
+        <dt>Publicação</dt><dd>Firebase Hosting via GitHub Actions</dd>
+      </dl>
+    </div>
+  </section>
 
   <footer>
-    Publicado com Firebase Hosting · atualizado automaticamente via GitHub Actions
+    <span>Redes Neurais, IBMEC 2026.2</span>
+    <span>Clique no gráfico para pausar ou continuar o treino.</span>
   </footer>
+
 </div>
+
+<script>
+(function () {
+  // ---------- Rede neural mínima: 2 -> 16 -> 16 -> 1 ----------
+  function criarRede(tamanhos) {
+    const W = [], b = [];
+    for (let l = 0; l < tamanhos.length - 1; l++) {
+      const n = tamanhos[l], m = tamanhos[l + 1];
+      const w = new Float32Array(n * m), s = Math.sqrt(6 / (n + m));
+      for (let k = 0; k < w.length; k++) w[k] = (Math.random() * 2 - 1) * s;
+      W.push(w); b.push(new Float32Array(m));
+    }
+    return { tamanhos, W, b };
+  }
+
+  function frente(rede, x) {
+    const acts = [x]; let a = x;
+    for (let l = 0; l < rede.W.length; l++) {
+      const n = rede.tamanhos[l], m = rede.tamanhos[l + 1];
+      const z = new Float32Array(m), ultima = l === rede.W.length - 1;
+      for (let j = 0; j < m; j++) {
+        let s = rede.b[l][j];
+        for (let i = 0; i < n; i++) s += a[i] * rede.W[l][i * m + j];
+        z[j] = ultima ? 1 / (1 + Math.exp(-s)) : Math.tanh(s);
+      }
+      acts.push(z); a = z;
+    }
+    return acts;
+  }
+
+  function passo(rede, x, y, lr) {
+    const acts = frente(rede, x), L = rede.W.length;
+    let delta = new Float32Array([acts[L][0] - y]);
+    for (let l = L - 1; l >= 0; l--) {
+      const n = rede.tamanhos[l], m = rede.tamanhos[l + 1], a = acts[l];
+      const prev = new Float32Array(n);
+      for (let i = 0; i < n; i++) {
+        let s = 0;
+        for (let j = 0; j < m; j++) {
+          s += rede.W[l][i * m + j] * delta[j];
+          rede.W[l][i * m + j] -= lr * delta[j] * a[i];
+        }
+        prev[i] = s * (1 - a[i] * a[i]);
+      }
+      for (let j = 0; j < m; j++) rede.b[l][j] -= lr * delta[j];
+      delta = prev;
+    }
+  }
+
+  function epoca(rede, X, Y, lr) {
+    const idx = X.map((_, i) => i);
+    for (let i = idx.length - 1; i > 0; i--) {
+      const j = (Math.random() * (i + 1)) | 0;
+      [idx[i], idx[j]] = [idx[j], idx[i]];
+    }
+    for (const i of idx) passo(rede, X[i], Y[i], lr);
+  }
+
+  function avaliar(rede, X, Y) {
+    let perda = 0, certos = 0;
+    for (let i = 0; i < X.length; i++) {
+      const p = Math.min(1 - 1e-6, Math.max(1e-6, frente(rede, X[i])[3][0]));
+      perda += -(Y[i] * Math.log(p) + (1 - Y[i]) * Math.log(1 - p));
+      if ((p > 0.5) === (Y[i] === 1)) certos++;
+    }
+    return { perda: perda / X.length, acc: certos / X.length };
+  }
+
+  // ---------- Conjuntos de dados (coordenadas em [-1, 1]) ----------
+  const N = 220;
+  const ruido = (k) => (Math.random() - 0.5) * k;
+  const datasets = {
+    circulo() {
+      const X = [], Y = [];
+      for (let i = 0; i < N; i++) {
+        const r = Math.sqrt(Math.random()) * 0.95, t = Math.random() * 6.2832;
+        X.push(new Float32Array([r * Math.cos(t), r * Math.sin(t)]));
+        Y.push(r < 0.55 ? 1 : 0);
+      }
+      return { X, Y };
+    },
+    xor() {
+      const X = [], Y = [];
+      for (let i = 0; i < N; i++) {
+        const x = (Math.random() * 2 - 1) * 0.9, y = (Math.random() * 2 - 1) * 0.9;
+        X.push(new Float32Array([x, y]));
+        Y.push(x * y > 0 ? 1 : 0);
+      }
+      return { X, Y };
+    },
+    luas() {
+      const X = [], Y = [];
+      for (let i = 0; i < N; i++) {
+        const c = i % 2, t = Math.random() * Math.PI;
+        const x = c ? 1 - Math.cos(t) - 0.5 : Math.cos(t) - 0.5;
+        const y = c ? -Math.sin(t) + 0.35 : Math.sin(t) - 0.35;
+        X.push(new Float32Array([x * 0.8 + ruido(0.15), y * 0.8 + ruido(0.15)]));
+        Y.push(c);
+      }
+      return { X, Y };
+    },
+    espiral() {
+      const X = [], Y = [];
+      for (let i = 0; i < N; i++) {
+        const c = i % 2, r = (i / N) * 0.9 + 0.08;
+        const t = (i / N) * 2.4 * Math.PI + c * Math.PI + ruido(0.3);
+        X.push(new Float32Array([r * Math.cos(t), r * Math.sin(t)]));
+        Y.push(c);
+      }
+      return { X, Y };
+    }
+  };
+
+  // ---------- Desenho ----------
+  const tela = document.getElementById('tela');
+  const ctx = tela.getContext('2d');
+  const RES = 56;
+  const off = document.createElement('canvas');
+  off.width = RES; off.height = RES;
+  const octx = off.getContext('2d');
+  const img = octx.createImageData(RES, RES);
+
+  const COR0 = [255, 118, 87], COR1 = [71, 198, 255], FUNDO = [10, 17, 40];
+  const entrada = new Float32Array(2);
+
+  function desenhar(rede, X, Y) {
+    const d = img.data;
+    for (let gy = 0; gy < RES; gy++) {
+      for (let gx = 0; gx < RES; gx++) {
+        entrada[0] = (gx + 0.5) / RES * 2 - 1;
+        entrada[1] = 1 - (gy + 0.5) / RES * 2;
+        const p = frente(rede, entrada)[3][0];
+        const conf = Math.abs(p - 0.5) * 2;
+        const alfa = 0.14 + 0.5 * conf;
+        const cor = p > 0.5 ? COR1 : COR0;
+        const k = (gy * RES + gx) * 4;
+        d[k]     = FUNDO[0] + (cor[0] - FUNDO[0]) * alfa;
+        d[k + 1] = FUNDO[1] + (cor[1] - FUNDO[1]) * alfa;
+        d[k + 2] = FUNDO[2] + (cor[2] - FUNDO[2]) * alfa;
+        d[k + 3] = 255;
+      }
+    }
+    octx.putImageData(img, 0, 0);
+
+    const S = tela.width;
+    ctx.imageSmoothingEnabled = true;
+    ctx.imageSmoothingQuality = 'high';
+    ctx.drawImage(off, 0, 0, S, S);
+
+    // grade leve
+    ctx.strokeStyle = 'rgba(237,240,250,0.07)';
+    ctx.lineWidth = 1;
+    for (let i = 1; i < 8; i++) {
+      const v = (S / 8) * i;
+      ctx.beginPath(); ctx.moveTo(v, 0); ctx.lineTo(v, S); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(0, v); ctx.lineTo(S, v); ctx.stroke();
+    }
+
+    // pontos
+    for (let i = 0; i < X.length; i++) {
+      const px = (X[i][0] + 1) / 2 * S, py = (1 - X[i][1]) / 2 * S;
+      ctx.beginPath();
+      ctx.arc(px, py, S * 0.0095, 0, 6.2832);
+      ctx.fillStyle = Y[i] ? 'rgb(71,198,255)' : 'rgb(255,118,87)';
+      ctx.fill();
+      ctx.lineWidth = S * 0.0025;
+      ctx.strokeStyle = 'rgba(255,255,255,0.85)';
+      ctx.stroke();
+    }
+  }
+
+  // ---------- Controle do treino ----------
+  const LR = 0.02, EPOCAS_POR_QUADRO = 2, MAX_EPOCAS = 4000;
+  const reduzMovimento = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const elEpoca = document.getElementById('m-epoca');
+  const elPerda = document.getElementById('m-perda');
+  const elAcc = document.getElementById('m-acc');
+  const elEstado = document.getElementById('estado');
+  const btnPausa = document.getElementById('btn-pausa');
+
+  let dsAtual = 'circulo', dados, rede, ep = 0, pausado = false, raf = null;
+
+  function atualizarMetricas() {
+    const r = avaliar(rede, dados.X, dados.Y);
+    elEpoca.textContent = ep;
+    elPerda.textContent = r.perda.toFixed(3).replace('.', ',');
+    elAcc.textContent = Math.round(r.acc * 100) + '%';
+  }
+
+  function definirEstado(txt) { elEstado.textContent = txt; }
+
+  function reiniciar() {
+    if (raf) cancelAnimationFrame(raf);
+    dados = datasets[dsAtual]();
+    rede = criarRede([2, 16, 16, 1]);
+    ep = 0;
+    if (reduzMovimento) {
+      // Sem animação: treina de uma vez e mostra o resultado final.
+      for (let e = 0; e < 600; e++) epoca(rede, dados.X, dados.Y, LR);
+      ep = 600;
+      desenhar(rede, dados.X, dados.Y);
+      atualizarMetricas();
+      definirEstado('concluído');
+      return;
+    }
+    pausado = false;
+    btnPausa.textContent = 'Pausar';
+    definirEstado('treinando');
+    desenhar(rede, dados.X, dados.Y);
+    atualizarMetricas();
+    raf = requestAnimationFrame(quadro);
+  }
+
+  function quadro() {
+    if (!pausado && ep < MAX_EPOCAS) {
+      for (let k = 0; k < EPOCAS_POR_QUADRO; k++) { epoca(rede, dados.X, dados.Y, LR); ep++; }
+      desenhar(rede, dados.X, dados.Y);
+      if (ep % 6 === 0) atualizarMetricas();
+      if (ep >= MAX_EPOCAS) definirEstado('concluído');
+    }
+    raf = requestAnimationFrame(quadro);
+  }
+
+  function alternarPausa() {
+    if (reduzMovimento) return;
+    pausado = !pausado;
+    btnPausa.textContent = pausado ? 'Continuar' : 'Pausar';
+    definirEstado(pausado ? 'pausado' : 'treinando');
+    if (!pausado) atualizarMetricas();
+  }
+
+  document.querySelectorAll('.seg button').forEach((b) => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.seg button').forEach((o) => o.setAttribute('aria-pressed', 'false'));
+      b.setAttribute('aria-pressed', 'true');
+      dsAtual = b.dataset.ds;
+      reiniciar();
+    });
+  });
+  document.getElementById('btn-reset').addEventListener('click', reiniciar);
+  btnPausa.addEventListener('click', alternarPausa);
+  tela.addEventListener('click', alternarPausa);
+  tela.addEventListener('keydown', (e) => {
+    if (e.key === ' ' || e.key === 'Enter') { e.preventDefault(); alternarPausa(); }
+  });
+
+  // Pausa quando a aba não está visível, para não gastar CPU à toa.
+  document.addEventListener('visibilitychange', () => {
+    if (reduzMovimento) return;
+    if (document.hidden) { if (raf) cancelAnimationFrame(raf); raf = null; }
+    else if (!raf) raf = requestAnimationFrame(quadro);
+  });
+
+  reiniciar();
+})();
+</script>
 
 </body>
 </html>
