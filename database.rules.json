@@ -1,6 +1,10 @@
 {
   "rules": {
-    ".read": "now < 1790910000000",  // 2026-10-2
-    ".write": "now < 1790910000000",  // 2026-10-2
+    ".read": false,
+    ".write": false,
+    "aula": {
+      ".read": true,
+      ".write": true
+    }
   }
 }

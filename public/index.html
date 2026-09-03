@@ -251,6 +251,49 @@
   .sobre dt { color: var(--muted); font-weight: 500; }
   .sobre dd { font-weight: 500; }
 
+  /* ---------- banco de dados ---------- */
+  .db { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  @media (max-width: 860px) { .db { grid-template-columns: 1fr; } }
+  .db-painel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  .db-painel h3 { font-size: 1rem; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: baseline; }
+  .db label { display: block; font-size: 0.85rem; color: var(--muted); font-weight: 500; margin: 12px 0 6px; }
+  .db input, .db textarea {
+    width: 100%;
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.9rem;
+    color: var(--ink);
+    background: #0a1128;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    padding: 10px 12px;
+  }
+  .db textarea { min-height: 96px; resize: vertical; }
+  .db input:focus-visible, .db textarea:focus-visible { outline: 2px solid var(--sky); outline-offset: 1px; }
+  .db-ops { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 14px; }
+  .db-ops .mini { margin-left: 0; }
+  .db-ops .mini:disabled { opacity: 0.4; cursor: default; }
+  .db-ops .mini[data-op="delete"] { border-color: rgba(255, 118, 87, 0.45); color: var(--coral); }
+  .db pre {
+    font-family: ui-monospace, "Cascadia Code", Consolas, monospace;
+    font-size: 0.85rem;
+    line-height: 1.5;
+    color: #c6cde3;
+    background: #0a1128;
+    border-radius: 8px;
+    padding: 14px;
+    min-height: 120px;
+    max-height: 320px;
+    overflow: auto;
+    white-space: pre-wrap;
+    word-break: break-word;
+  }
+  .db-status { font-size: 0.8rem; color: var(--muted); font-weight: 500; }
+
   footer {
     border-top: 1px solid var(--line);
     padding: 32px 0 48px;
@@ -269,6 +312,7 @@
     <ul>
       <li><a href="#demo">Demo</a></li>
       <li><a href="#roteiro">Roteiro</a></li>
+      <li><a href="#banco">Banco</a></li>
       <li><a href="#sobre">Sobre</a></li>
       <li><a href="https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2">GitHub</a></li>
     </ul>
@@ -368,6 +412,43 @@
         <span class="pill">em breve</span>
       </li>
     </ol>
+  </section>
+
+  <section id="banco">
+    <h2>Banco de dados</h2>
+    <p class="intro">
+      Operações de leitura e escrita no Realtime Database, direto do navegador.
+      O nó <code>aula</code> é público para a demonstração; o painel da direita
+      mostra o conteúdo dele em tempo real.
+    </p>
+
+    <div class="db">
+      <div class="db-painel">
+        <h3>Operações <span class="db-status" id="db-status">conectando…</span></h3>
+
+        <label for="db-caminho">Caminho</label>
+        <input id="db-caminho" type="text" value="aula" spellcheck="false">
+
+        <label for="db-valor">Valor (JSON)</label>
+        <textarea id="db-valor" spellcheck="false">{ "mensagem": "Inserido pelo site" }</textarea>
+
+        <div class="db-ops">
+          <button type="button" class="mini" data-op="create">Create</button>
+          <button type="button" class="mini" data-op="read">Read</button>
+          <button type="button" class="mini" data-op="update">Update</button>
+          <button type="button" class="mini" data-op="push">Push</button>
+          <button type="button" class="mini" data-op="delete">Delete</button>
+        </div>
+
+        <label>Resultado</label>
+        <pre id="db-saida">Escolha uma operação.</pre>
+      </div>
+
+      <div class="db-painel">
+        <h3>aula, ao vivo</h3>
+        <pre id="db-ao-vivo">carregando…</pre>
+      </div>
+    </div>
   </section>
 
   <section id="sobre">
@@ -657,6 +738,7 @@
   reiniciar();
 })();
 </script>
+<script type="module" src="js/crud.js"></script>
 
 </body>
 </html>

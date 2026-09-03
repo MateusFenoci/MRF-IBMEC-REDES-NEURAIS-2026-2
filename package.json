@@ -1,0 +1,25 @@
+{
+  "dependencies": {
+    "dotenv": "^17.4.2",
+    "firebase": "^12.18.0"
+  },
+  "name": "mrf-ibmec-redes-neurais-2026-2",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2/issues"
+  },
+  "homepage": "https://github.com/MateusFenoci/MRF-IBMEC-REDES-NEURAIS-2026-2#readme"
+}
